@@ -127,5 +127,86 @@ namespace FiledRecipes.Domain
                 handler(this, e);
             }
         }
+
+        public virtual void Load()
+        {
+            Recipe recipe = new Recipe("Start");
+            bool skip = false;
+            string type = "";
+            string line;
+            System.IO.StreamReader file = new System.IO.StreamReader(_path);
+            while ((line = file.ReadLine()) != null && line != "")
+            {
+                if (line == "[Recept]")
+                {
+                    skip = true;
+                    type = "recipe";
+                }
+
+                if (line == "[Ingredienser]")
+                {
+                    skip = true;
+                    type = "ingred";
+                }
+
+                if (line == "[Instruktioner]")
+                {
+                    skip = true;
+                    type = "instr";
+                }
+
+                if (skip == false)
+                {
+
+                    switch (type)
+                    {
+                        case "recipe":
+                            if (recipe.Name != "Start")
+                            {
+                                _recipes.Add(recipe);
+                                Console.WriteLine("Added recipe ");
+                            }
+                            recipe = new Recipe(line);
+                            Console.WriteLine("recipe name " + line);
+                            break;
+                        case "ingred":
+
+                            string[] part = line.Split(';');
+                            Ingredient ingredient = new Ingredient();
+                            ingredient.Amount = part[0];
+                            ingredient.Measure = part[1];
+                            ingredient.Name = part[2];
+                            recipe.Add(ingredient);
+                            Console.WriteLine("Added ingred " + part[0] + part[1] + part[2]);
+                            break;
+
+                        case "instr":
+                            recipe.Add(line);
+                            Console.WriteLine("Added isntruction " +line);
+                            break;
+
+                        default:                   
+                            break;
+                    }
+
+                }
+
+                skip = false;
+                
+
+            }
+
+            file.Close();
+            _recipes.Add(recipe);
+            Console.WriteLine("Added recipe");
+            _recipes.Sort();
+            OnRecipesChanged(EventArgs.Empty);
+
+        }
+
+        public virtual void Save()
+        {
+
+        }
     }
 }
