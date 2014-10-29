@@ -132,7 +132,7 @@ namespace FiledRecipes.Domain
         {
             Recipe recipe = new Recipe("Start");
             bool skip = false;
-            string type = "";
+            RecipeReadStatus type = RecipeReadStatus.Indefinite;
             string line;
             System.IO.StreamReader file = new System.IO.StreamReader(_path);
             while ((line = file.ReadLine()) != null && line != "")
@@ -140,36 +140,36 @@ namespace FiledRecipes.Domain
                 if (line == "[Recept]")
                 {
                     skip = true;
-                    type = "recipe";
+                    type = RecipeReadStatus.New;
                 }
 
                 if (line == "[Ingredienser]")
                 {
                     skip = true;
-                    type = "ingred";
+                    type = RecipeReadStatus.Ingredient;
                 }
 
                 if (line == "[Instruktioner]")
                 {
                     skip = true;
-                    type = "instr";
+                    type = RecipeReadStatus.Instruction;
                 }
 
-                if (skip == false)
+                if (skip == false) //Skip headers/instructions
                 {
 
-                    switch (type)
+                    switch (type) //Depending on what type of line is expected
                     {
-                        case "recipe":
+                        case RecipeReadStatus.New: //if recipe line, create new recipe with the name of the line
                             if (recipe.Name != "Start")
                             {
                                 _recipes.Add(recipe);
-                                Console.WriteLine("Added recipe ");
+                                Console.WriteLine("Added recipe "); //Debug message
                             }
                             recipe = new Recipe(line);
                             Console.WriteLine("recipe name " + line);
                             break;
-                        case "ingred":
+                        case RecipeReadStatus.Ingredient: //if ingredient, construct an ingredient object from splitting up the line
 
                             string[] part = line.Split(';');
                             Ingredient ingredient = new Ingredient();
@@ -177,15 +177,16 @@ namespace FiledRecipes.Domain
                             ingredient.Measure = part[1];
                             ingredient.Name = part[2];
                             recipe.Add(ingredient);
-                            Console.WriteLine("Added ingred " + part[0] + part[1] + part[2]);
+                            Console.WriteLine("Added ingred " + part[0] + part[1] + part[2]); //Debug message
                             break;
 
-                        case "instr":
+                        case RecipeReadStatus.Instruction: //if instruction, add instruction line to Recipe
                             recipe.Add(line);
-                            Console.WriteLine("Added isntruction " +line);
+                            Console.WriteLine("Added isntruction " +line); //Debug message
                             break;
 
-                        default:                   
+                        default:
+                            throw new FormatException("Något är fel");
                             break;
                     }
 
@@ -197,15 +198,40 @@ namespace FiledRecipes.Domain
             }
 
             file.Close();
-            _recipes.Add(recipe);
-            Console.WriteLine("Added recipe");
-            _recipes.Sort();
+            _recipes.Add(recipe); //add last recipe to _recipe list
+            Console.WriteLine("Added recipe"); //Debug message
+            _recipes.Sort(); //sort list
             OnRecipesChanged(EventArgs.Empty);
 
         }
 
         public virtual void Save()
         {
+
+            System.IO.StreamWriter file = new System.IO.StreamWriter(_path);
+
+            foreach (IRecipe recipe in _recipes)
+            {
+                file.WriteLine("[Recept]");
+                file.WriteLine(recipe.Name);
+                file.WriteLine("[Ingredienser]");
+                foreach (Ingredient ingred in recipe.Ingredients)
+                {
+                    file.WriteLine("{0};{1};{2}", ingred.Amount, ingred.Measure, ingred.Name);
+                }
+                file.WriteLine("[Instruktioner]");
+                foreach (string instr in recipe.Instructions)
+                {
+                    file.WriteLine(instr);
+                }
+
+
+            }
+
+            file.Close();
+
+
+
 
         }
     }

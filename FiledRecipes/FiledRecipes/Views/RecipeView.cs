@@ -15,17 +15,17 @@ namespace FiledRecipes.Views
 
         public virtual void Show(IRecipe recipe)
         {
-            Console.WriteLine("");
-            Console.WriteLine("------------------------------------------------------");
-            Console.WriteLine(recipe.Name);
-            Console.WriteLine("");
-            Console.WriteLine("-------------------Ingredienser---------------------");
+
+            Header = recipe.Name;
+            ShowHeaderPanel();
+
+            ShowPanel("Ingredienser", App.Controls.MessagePanelOptions.Basic);
             foreach(Ingredient ingred in recipe.Ingredients){
 
                 Console.WriteLine(ingred);
             }
-            Console.WriteLine("");
-            Console.WriteLine("-------------------Instruktioner---------------------");
+
+            ShowPanel("Instruktioner", App.Controls.MessagePanelOptions.Basic);
             foreach (string instr in recipe.Instructions)
             {
                 Console.WriteLine(instr);
@@ -37,28 +37,25 @@ namespace FiledRecipes.Views
 
             foreach (IRecipe recipe in recipes)
             {
-                Console.WriteLine("");
-                Console.WriteLine("------------------------------------------------------");
-                Console.WriteLine(recipe.Name);
-                Console.WriteLine("");
-                Console.WriteLine("-------------------Ingredienser---------------------");
+                Header = recipe.Name;
+                ShowHeaderPanel();
+
+                ShowPanel("Ingredienser", App.Controls.MessagePanelOptions.Basic);
                 foreach (Ingredient ingred in recipe.Ingredients)
                 {
 
                     Console.WriteLine(ingred);
                 }
-                Console.WriteLine("");
-                Console.WriteLine("-------------------Instruktioner---------------------");
+              
+                ShowPanel("Instruktioner", App.Controls.MessagePanelOptions.Basic);
                 foreach (string instr in recipe.Instructions)
                 {
                     Console.WriteLine(instr);
                 }
 
-
             }
-            Console.WriteLine("");
-            Console.WriteLine("Tryck på tangent för att fortsätta");
-            Console.ReadKey();
+
+            ContinueOnKeyPressed();
 
 
         }
